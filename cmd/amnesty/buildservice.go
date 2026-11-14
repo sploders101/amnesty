@@ -224,10 +224,9 @@ func (buildService) InstallAur(
 		}
 		return nil, fmt.Errorf("failed to clone repository: %w", err)
 	}
-	fmt.Println(string(cloneOutput))
 
 	pkgCmd := exec.CommandContext(ctx, "makepkg", "-si", "--noconfirm")
-	cloneCmd.Env = userEnv
+	pkgCmd.Env = userEnv
 	pkgCmd.Dir = pkgDir
 	pkgCmd.SysProcAttr = &syscall.SysProcAttr{
 		Credential: userCredential,

@@ -209,8 +209,14 @@ func InstallBlueprint(
 	// Install user files
 	for _, fileMeta := range blueprint.InstallFiles {
 		slog.Info("Installing user file", "file", fileMeta.Path)
+		if err := os.MkdirAll(
+			filepath.Dir(filepath.Join(rootfsPath, fileMeta.Path)),
+			0o755,
+		); err != nil {
+			return err
+		}
 		if err := os.WriteFile(
-			fileMeta.Path,
+			filepath.Join(rootfsPath, fileMeta.Path),
 			[]byte(fileMeta.Contents),
 			os.FileMode(fileMeta.Mode),
 		); err != nil {
@@ -219,8 +225,18 @@ func InstallBlueprint(
 	}
 
 	// Run postinstall scripts
+	sudoerNopassPath := filepath.Join(rootfsPath, "etc/sudoers.d/system_setup")
 	for i, postinstall := range blueprint.Postinstall {
 		slog.Info("Running postinstalls...", "current", i, "total", len(blueprint.Postinstall))
+		if postinstall.AllowSudo {
+			if err := os.WriteFile(
+				sudoerNopassPath,
+				[]byte("%wheel ALL=(ALL:ALL) NOPASSWD: ALL\n"),
+				0o550,
+			); err != nil {
+				return fmt.Errorf("failed to set up nopasswd sudo for user: %w", err)
+			}
+		}
 		runas := postinstall.Runas
 		runResp, err := container.Client.RunCommand(ctx, ipcv1.RunCommandRequest_builder{
 			Command: "bash",
@@ -236,6 +252,11 @@ func InstallBlueprint(
 				postinstall.Cmd,
 				runResp.GetOutput(),
 			)
+		}
+		if postinstall.AllowSudo {
+			if err := os.Remove(sudoerNopassPath); err != nil {
+				return fmt.Errorf("failed to clean up nopasswd sudo for user: %w", err)
+			}
 		}
 	}
 

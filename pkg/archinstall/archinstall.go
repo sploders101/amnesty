@@ -69,7 +69,6 @@ func EnableLocales(locgenPath string, chosenLocale string) error {
 	return nil
 }
 
-// TODO: Not finished
 func InstallAurPackages(
 	ctx context.Context,
 	container buildserver.BuildServer,

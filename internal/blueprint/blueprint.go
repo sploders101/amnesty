@@ -46,8 +46,9 @@ type InstallFile struct {
 }
 
 type Postinstall struct {
-	Runas string
-	Cmd   string
+	Runas     string
+	AllowSudo bool
+	Cmd       string
 }
 
 func NewBlueprint() *Blueprint {
@@ -169,8 +170,9 @@ func (bp *Blueprint) AddModule(templateVars map[string]any, module config.System
 			return fmt.Errorf("failed to render postinstall cmd: %w", err)
 		}
 		bp.Postinstall = append(bp.Postinstall, Postinstall{
-			Runas: runas,
-			Cmd:   cmd,
+			Runas:     runas,
+			AllowSudo: entry.AllowSudo,
+			Cmd:       cmd,
 		})
 	}
 

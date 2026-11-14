@@ -51,6 +51,7 @@ type InstallFile struct {
 }
 
 type Postinstall struct {
-	Runas TemplatedString `yaml:"runas"`
-	Cmd   TemplatedString `yaml:"cmd"`
+	Runas     TemplatedString `yaml:"runas"`
+	AllowSudo bool            `yaml:"allow_sudo"`
+	Cmd       TemplatedString `yaml:"cmd"`
 }
