@@ -27,7 +27,7 @@ func main() {
 			slog.Error("Failed to parse IPC file descriptor", "error", err)
 		}
 
-		if err := runBuildService(ipcFd); err != nil {
+		if err := runBuildService(ctx, ipcFd); err != nil {
 			slog.Error("Build service failed", "error", err)
 		}
 

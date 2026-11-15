@@ -16,6 +16,7 @@ import (
 
 	ipcv1 "github.com/sploders101/amnesty/internal/gen/proto/com/shaunkeys/amnesty/ipc/v1"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/stats"
 )
 
 type connListener struct {
@@ -32,29 +33,29 @@ func newConnListener(conn net.Conn) *connListener {
 	}
 }
 
-func (l *connListener) Accept() (net.Conn, error) {
-	l.mu.Lock()
-	if l.conn != nil {
-		conn := l.conn
-		l.conn = nil
-		l.mu.Unlock()
+func (listener *connListener) Accept() (net.Conn, error) {
+	listener.mu.Lock()
+	if listener.conn != nil {
+		conn := listener.conn
+		listener.conn = nil
+		listener.mu.Unlock()
 		return conn, nil
 	}
-	l.mu.Unlock()
+	listener.mu.Unlock()
 
-	<-l.closed
+	<-listener.closed
 	return nil, net.ErrClosed
 }
 
-func (l *connListener) Close() error {
-	l.once.Do(func() {
-		close(l.closed)
+func (listener *connListener) Close() error {
+	listener.once.Do(func() {
+		close(listener.closed)
 	})
 
-	l.mu.Lock()
-	conn := l.conn
-	l.conn = nil
-	l.mu.Unlock()
+	listener.mu.Lock()
+	conn := listener.conn
+	listener.conn = nil
+	listener.mu.Unlock()
 
 	if conn != nil {
 		return conn.Close()
@@ -62,11 +63,33 @@ func (l *connListener) Close() error {
 	return nil
 }
 
-func (l *connListener) Addr() net.Addr {
+func (listener *connListener) Addr() net.Addr {
 	return &net.UnixAddr{Name: "anonymous", Net: "unix"}
 }
 
-func runBuildService(ipcFd int) error {
+type connStats struct {
+	disconnected func()
+}
+
+func (gstats *connStats) TagRPC(ctx context.Context, info *stats.RPCTagInfo) context.Context {
+	return ctx
+}
+
+func (gstats *connStats) HandleRPC(ctx context.Context, stat stats.RPCStats) {}
+
+func (gstats *connStats) TagConn(ctx context.Context, info *stats.ConnTagInfo) context.Context {
+	return ctx
+}
+
+func (gstats *connStats) HandleConn(ctx context.Context, stat stats.ConnStats) {
+	if _, ok := stat.(*stats.ConnEnd); ok {
+		gstats.disconnected()
+	}
+}
+
+func runBuildService(ctx context.Context, ipcFd int) error {
+	ctx, cancel := context.WithCancel(ctx)
+	defer cancel()
 	ipcFile := os.NewFile(uintptr(ipcFd), "grpc-server")
 	ipcConn, err := net.FileConn(ipcFile)
 	if err := ipcFile.Close(); err != nil {
@@ -76,11 +99,27 @@ func runBuildService(ipcFd int) error {
 		return err
 	}
 	ipcListener := newConnListener(ipcConn)
+	defer func() { _ = ipcListener.Close() }()
 
-	server := grpc.NewServer()
+	if err := ctx.Err(); err != nil {
+		return err
+	}
+	gstats := &connStats{
+		disconnected: cancel,
+	}
+
+	server := grpc.NewServer(
+		grpc.StatsHandler(gstats),
+	)
 	ipcv1.RegisterBuilderServiceServer(server, buildService{})
-
-	return server.Serve(ipcListener)
+	go func() {
+		<-ctx.Done()
+		server.Stop()
+	}()
+	if err := server.Serve(ipcListener); err != nil && !errors.Is(err, net.ErrClosed) {
+		return err
+	}
+	return nil
 }
 
 type buildService struct {
@@ -148,15 +187,17 @@ func (buildService) RunCommand(
 	req *ipcv1.RunCommandRequest,
 ) (*ipcv1.RunCommandResponse, error) {
 	cmd := exec.CommandContext(ctx, req.GetCommand(), req.GetArgs()...)
-	cmd.Env = append(os.Environ(), req.GetEnv()...)
+	runas := "root"
 	if req.HasRunas() {
-		cred, err := getCredential(req.GetRunas())
-		if err != nil {
-			return nil, err
-		}
-		cmd.SysProcAttr = &syscall.SysProcAttr{
-			Credential: cred,
-		}
+		runas = req.GetRunas()
+	}
+	cmd.Env = append(buildUserEnv(runas), req.GetEnv()...)
+	cred, err := getCredential(runas)
+	if err != nil {
+		return nil, err
+	}
+	cmd.SysProcAttr = &syscall.SysProcAttr{
+		Credential: cred,
 	}
 	output, err := cmd.CombinedOutput()
 	var exitCode int32

@@ -67,6 +67,7 @@ func StartBuildServer(ctx context.Context) (BuildServer, error) {
 			syscall.CLONE_NEWPID |
 			syscall.CLONE_NEWIPC |
 			syscall.CLONE_NEWUTS,
+		Setsid: true,
 	}
 	if err := cmd.Start(); err != nil {
 		if err := oursock.Close(); err != nil {
