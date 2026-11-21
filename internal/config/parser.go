@@ -13,8 +13,8 @@ import (
 var ErrInvalidConfig error = errors.New("invalid config")
 
 type parsedDoc struct {
-	config *SystemConfig
-	module *SystemModule
+	config *OSConfig
+	module *OSModule
 }
 
 func (doc *parsedDoc) UnmarshalYAML(node *yaml.Node) error {
@@ -37,11 +37,11 @@ func (doc *parsedDoc) UnmarshalYAML(node *yaml.Node) error {
 		}
 		var err error
 		switch value.Value {
-		case "SystemConfig":
-			doc.config = &SystemConfig{}
+		case "OSConfig":
+			doc.config = &OSConfig{}
 			err = node.Decode(doc.config)
-		case "SystemModule":
-			doc.module = &SystemModule{}
+		case "OSModule":
+			doc.module = &OSModule{}
 			err = node.Decode(doc.module)
 		}
 		if err != nil {
@@ -52,19 +52,19 @@ func (doc *parsedDoc) UnmarshalYAML(node *yaml.Node) error {
 	return ErrInvalidConfig
 }
 
-type SystemTemplate struct {
-	Configs map[string]SystemConfig
-	Modules map[string]SystemModule
+type OSTemplate struct {
+	Configs map[string]OSConfig
+	Modules map[string]OSModule
 }
 
-func NewSystemTemplate() *SystemTemplate {
-	return &SystemTemplate{
-		Configs: make(map[string]SystemConfig),
-		Modules: make(map[string]SystemModule),
+func NewOSTemplate() *OSTemplate {
+	return &OSTemplate{
+		Configs: make(map[string]OSConfig),
+		Modules: make(map[string]OSModule),
 	}
 }
 
-func (bp *SystemTemplate) LoadFile(path string) error {
+func (bp *OSTemplate) LoadFile(path string) error {
 	file, err := os.Open(path)
 	if err != nil {
 		return fmt.Errorf("failed to open config file %q: %w", path, err)

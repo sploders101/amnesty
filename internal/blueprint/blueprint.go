@@ -60,7 +60,7 @@ func NewBlueprint() *Blueprint {
 	}
 }
 
-func (bp *Blueprint) AddModule(templateVars map[string]any, module config.SystemModule) error {
+func (bp *Blueprint) AddModule(templateVars map[string]any, module config.OSModule) error {
 	// Packages
 	for _, archPkgName := range module.Packages {
 		pkgName, err := archPkgName.Render(templateVars)
@@ -179,8 +179,8 @@ func (bp *Blueprint) AddModule(templateVars map[string]any, module config.System
 	return nil
 }
 
-func LoadSystemTemplate(ctx context.Context, modulesPath string) (*config.SystemTemplate, error) {
-	systemplate := config.NewSystemTemplate()
+func LoadOSTemplate(ctx context.Context, modulesPath string) (*config.OSTemplate, error) {
+	osTemplate := config.NewOSTemplate()
 
 	modules, err := os.Stat(modulesPath)
 	if err != nil {
@@ -190,7 +190,7 @@ func LoadSystemTemplate(ctx context.Context, modulesPath string) (*config.System
 		return nil, err
 	}
 	if !modules.IsDir() {
-		if err := systemplate.LoadFile(modulesPath); err != nil {
+		if err := osTemplate.LoadFile(modulesPath); err != nil {
 			return nil, err
 		}
 	} else {
@@ -203,19 +203,19 @@ func LoadSystemTemplate(ctx context.Context, modulesPath string) (*config.System
 				if !entry.Type().IsRegular() || !strings.HasSuffix(entry.Name(), ".yaml") {
 					return nil
 				}
-				return systemplate.LoadFile(path)
+				return osTemplate.LoadFile(path)
 			},
 		); err != nil {
 			return nil, err
 		}
 	}
-	return systemplate, nil
+	return osTemplate, nil
 }
 
-func AssembleBlueprint(systemplate *config.SystemTemplate, sysconfig string) (*Blueprint, error) {
-	config, ok := systemplate.Configs[sysconfig]
+func AssembleBlueprint(osTemplate *config.OSTemplate, osconfig string) (*Blueprint, error) {
+	config, ok := osTemplate.Configs[osconfig]
 	if !ok {
-		return nil, fmt.Errorf("unknown sysconfig %q", sysconfig)
+		return nil, fmt.Errorf("unknown osconfig %q", osconfig)
 	}
 
 	bp := NewBlueprint()
@@ -231,7 +231,7 @@ func AssembleBlueprint(systemplate *config.SystemTemplate, sysconfig string) (*B
 	templateVars["locale"] = bp.Locale
 	templateVars["timezone"] = bp.Timezone
 	for _, moduleName := range config.Modules {
-		module, ok := systemplate.Modules[moduleName]
+		module, ok := osTemplate.Modules[moduleName]
 		if !ok {
 			return nil, fmt.Errorf("unknown module %q", moduleName)
 		}

@@ -13,10 +13,10 @@ import (
 )
 
 func installCli() *cli.Command {
-	var sysconfig string
+	var osconfig string
 	hostname, err := os.ReadFile("/etc/hostname")
 	if err == nil {
-		sysconfig = strings.TrimSpace(string(hostname))
+		osconfig = strings.TrimSpace(string(hostname))
 	}
 	modules := "/etc/amnesty/modules"
 
@@ -25,9 +25,9 @@ func installCli() *cli.Command {
 		Usage: "Installs an Arch sysroot in the specified directory",
 		Flags: []cli.Flag{
 			&cli.StringFlag{
-				Name:  "sysconfig",
-				Usage: "The SystemConfig profile to use for the installation",
-				Value: sysconfig,
+				Name:  "osconfig",
+				Usage: "The OSConfig profile to use for the installation",
+				Value: osconfig,
 			},
 			&cli.StringFlag{
 				Name:  "modules",
@@ -43,16 +43,16 @@ func installCli() *cli.Command {
 			},
 		},
 		Action: func(ctx context.Context, cmd *cli.Command) error {
-			sysconfig := cmd.String("sysconfig")
+			osconfig := cmd.String("osconfig")
 			modules := cmd.String("modules")
 			rootfs := cmd.StringArg("rootfs")
 
-			systemplate, err := blueprint.LoadSystemTemplate(ctx, modules)
+			osTemplate, err := blueprint.LoadOSTemplate(ctx, modules)
 			if err != nil {
 				return err
 			}
 
-			blueprint, err := blueprint.AssembleBlueprint(systemplate, sysconfig)
+			blueprint, err := blueprint.AssembleBlueprint(osTemplate, osconfig)
 			if err != nil {
 				return err
 			}

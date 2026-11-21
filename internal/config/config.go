@@ -2,7 +2,7 @@ package config
 
 import "os"
 
-type SystemConfig struct {
+type OSConfig struct {
 	Version  string   `yaml:"version"`
 	Kind     string   `yaml:"kind"`
 	Name     string   `yaml:"name"`
@@ -12,7 +12,7 @@ type SystemConfig struct {
 	Timezone string   `yaml:"timezone"`
 }
 
-type SystemModule struct {
+type OSModule struct {
 	Version         string            `yaml:"version"`
 	Kind            string            `yaml:"kind"`
 	Name            string            `yaml:"name"`
