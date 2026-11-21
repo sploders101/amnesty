@@ -69,3 +69,59 @@ your work, then you can periodically check that your configuration is accurate
 and test it with relatively low risk. With snapshots, you can also do things
 like say "Hold my beer. I wanna try something..." and restore your system when
 everything crashes and burns.
+
+
+## Implementation notes
+
+This section serves as low-effort documentation that I will clean up later when
+I've got a working prototype. I just want to jot some things down now while I'm
+working out the design so I don't forget to document them later.
+
+Amnesty is going to be a little bloated. This is by design. My gaming PC is
+also my dev PC, and the PC I use for personal stuff. In the modern era of
+constant malware & security exploits. This is... maybe not such a great idea...
+I want to isolate these systems from one another without breaking the bank, and
+I'm going to use Amnesty to do that. Since I've already got a modular
+configuration system and an installer capable of going from `rootpath` to full
+system, I should be able to define multiple operating systems composed of
+different combinations of these modules. Amnesty will create and maintain these
+operating systems in different LUKS partitions. 
+
+Next comes the booting problem. I *could* just stash a bunch of UKIs in my ESP
+and call it a day. That won't play *super* nice though with snapshots, multiple
+operating systems, or the console use case. I also use a wireless keyboard and
+I don't *love* the fact that I'm only like 90% sure it's got encryption on the
+2.4GHz dongle. I also suck at memorizing passwords, so coming up with one for
+each system doesn't sound fun. Neither is typing them in at public places like
+airports and coffee shops. My phone is a heck of a lot more secure than my PC,
+so I'm entertaining the idea of a system unlock app to allow my phone to
+send my PC the decryption key over bluetooth via asymmetric encryption. That
+way, I don't have to type in my password. I just unlock my phone and hit the
+notification prompt. No security camera can watch my fingers to determine my
+encryption key. I would also like to eventually be able to choose a boot device
+from my phone to facilitate booting as a gaming console, which likely won't
+have a keyboard attached at all.
+
+In short, I have really complicated desires for booting my system, that no
+bootloader could accomodate... so why have one? I recently learned about Red
+Hat's NMBL project, which uses `kexec` to boot their system. In other words,
+they created a UKI which loads Linux with a userspace program to emulate GRUB.
+When the user makes a selection, they use `kexec` to swap the currently-running
+kernel with the new one, which got me thinking... If a userspace program can be
+a bootloader, then making a bootloader just got a ***WHOLE LOT*** easier...
+
+Therefore, I plan to expand amnesty into the boot sequence. Amnesty will
+provision an extra Arch-based operating system configured with a minimal set of
+dependencies, whose sole purpose is to identify Amnesty-managed systems and
+boot them by sourcing the kernel and initramfs from the snapshot you choose
+(which lives in a btrfs subvolume, potentially on an LVM+LUKS partition). By
+owning both the OS setup and the bootloader, I can also transfer decryption
+keys across the bootloader boundary, meaning the target OS doesn't have to do
+much to support all the extra features I want. I can implement disk decryption,
+key sourcing, and boot selectors within Amnesty, with the option of
+communicating to an Android app via Bluetooth. That means I can just plug my
+computer into the TV, turn it on, and unlock it with my phone, instructing it
+to boot into console mode. I could also implement a graphical application to
+serve as my bootloader using something like Flutter-pi to allow the creation of
+a beautiful bootloader menu that fits the user's theme (going to have to
+investigate what this does to boot times though).
