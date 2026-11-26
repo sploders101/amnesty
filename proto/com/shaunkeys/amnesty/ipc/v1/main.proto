@@ -4,14 +4,15 @@ package com.shaunkeys.amnesty.ipc.v1;
 service BuilderService {
   rpc Initialize(InitializeRequest) returns (InitializeResponse);
   rpc RunCommand(RunCommandRequest) returns (RunCommandResponse);
-  rpc InstallAur(InstallAurRequest) returns (InstallAurResponse);
+  rpc InstallCustom(InstallCustomRequest) returns (InstallCustomResponse);
 }
 
-message InstallAurRequest {
-  string package = 1;
-  string as_user = 2;
+message InstallCustomRequest {
+  string as_user = 1;
+  string package = 2;
+  optional string pkgbuild = 10;
 }
-message InstallAurResponse {}
+message InstallCustomResponse {}
 
 message InitializeRequest {
   string rootdir = 1;

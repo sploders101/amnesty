@@ -3,7 +3,6 @@ package config
 import "os"
 
 type SystemConfig struct {
-	
 }
 
 type OSConfig struct {
@@ -57,6 +56,7 @@ type OSModule struct {
 	Description     string            `yaml:"description"`
 	Packages        []TemplatedString `yaml:"packages"`
 	AURPackages     []TemplatedString `yaml:"aur_packages"`
+	CustomPackages  []TemplatedString `yaml:"custom_packages"`
 	FlatpakPackages []TemplatedString `yaml:"flatpak_packages"`
 	FlatpakRemotes  []FlatpakRemote   `yaml:"flatpak_remotes"`
 	Services        Services          `yaml:"services"`
@@ -92,4 +92,11 @@ type Postinstall struct {
 	Runas     TemplatedString `yaml:"runas"`
 	AllowSudo bool            `yaml:"allow_sudo"`
 	Cmd       TemplatedString `yaml:"cmd"`
+}
+
+type CustomPackage struct {
+	Version  string          `yaml:"version"`
+	Kind     string          `yaml:"kind"`
+	Name     string          `yaml:"name"`
+	Pkgbuild TemplatedString `yaml:"pkgbuild"`
 }

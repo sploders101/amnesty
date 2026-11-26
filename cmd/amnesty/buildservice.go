@@ -215,10 +215,10 @@ func (buildService) RunCommand(
 	}.Build(), nil
 }
 
-func (buildService) InstallAur(
+func (buildService) InstallCustom(
 	ctx context.Context,
-	req *ipcv1.InstallAurRequest,
-) (*ipcv1.InstallAurResponse, error) {
+	req *ipcv1.InstallCustomRequest,
+) (*ipcv1.InstallCustomResponse, error) {
 	userCredential, err := getCredential(req.GetAsUser())
 	if err != nil {
 		return nil, fmt.Errorf("failed to get user credential: %w", err)
@@ -246,24 +246,52 @@ func (buildService) InstallAur(
 		}
 	}()
 
-	cloneCmd := exec.CommandContext(
-		ctx,
-		"git",
-		"clone",
-		fmt.Sprintf("https://aur.archlinux.org/%v.git", req.GetPackage()),
-		req.GetPackage(),
-	)
-	cloneCmd.Env = userEnv
-	cloneCmd.Dir = "/var/tmp/aurs"
-	cloneCmd.SysProcAttr = &syscall.SysProcAttr{
-		Credential: userCredential,
-	}
-	cloneOutput, err := cloneCmd.CombinedOutput()
-	if err != nil {
-		if err, ok := errors.AsType[*exec.ExitError](err); ok {
-			return nil, fmt.Errorf("failed to clone repository: %w: %v", err, string(cloneOutput))
+	if req.HasPkgbuild() {
+		if err := os.Mkdir(pkgDir, 0o755); err != nil {
+			return nil, fmt.Errorf("failed to mkdir: %w", err)
 		}
-		return nil, fmt.Errorf("failed to clone repository: %w", err)
+		if err := os.Chown(pkgDir, int(userCredential.Uid), int(userCredential.Gid)); err != nil {
+			return nil, fmt.Errorf("failed to chown build dir: %w", err)
+		}
+		pkgbuildPath := filepath.Join(pkgDir, "PKGBUILD")
+		if err := os.WriteFile(
+			pkgbuildPath,
+			[]byte(req.GetPkgbuild()),
+			0o644,
+		); err != nil {
+			return nil, fmt.Errorf("failed to write PKGBUILD: %w", err)
+		}
+		if err := os.Chown(
+			pkgbuildPath,
+			int(userCredential.Uid),
+			int(userCredential.Gid),
+		); err != nil {
+			return nil, fmt.Errorf("failed to chown build dir: %w", err)
+		}
+	} else {
+		cloneCmd := exec.CommandContext(
+			ctx,
+			"git",
+			"clone",
+			fmt.Sprintf("https://aur.archlinux.org/%v.git", req.GetPackage()),
+			req.GetPackage(),
+		)
+		cloneCmd.Env = userEnv
+		cloneCmd.Dir = "/var/tmp/aurs"
+		cloneCmd.SysProcAttr = &syscall.SysProcAttr{
+			Credential: userCredential,
+		}
+		cloneOutput, err := cloneCmd.CombinedOutput()
+		if err != nil {
+			if err, ok := errors.AsType[*exec.ExitError](err); ok {
+				return nil, fmt.Errorf(
+					"failed to clone repository: %w: %v",
+					err,
+					string(cloneOutput),
+				)
+			}
+			return nil, fmt.Errorf("failed to clone repository: %w", err)
+		}
 	}
 
 	pkgCmd := exec.CommandContext(ctx, "makepkg", "-si", "--noconfirm")
@@ -280,7 +308,7 @@ func (buildService) InstallAur(
 		return nil, fmt.Errorf("failed to build package: %w", err)
 	}
 
-	return ipcv1.InstallAurResponse_builder{}.Build(), nil
+	return ipcv1.InstallCustomResponse_builder{}.Build(), nil
 }
 
 func getCredential(username string) (*syscall.Credential, error) {

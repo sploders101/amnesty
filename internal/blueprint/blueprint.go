@@ -18,6 +18,7 @@ type Blueprint struct {
 	Timezone        string
 	Packages        map[string]struct{}
 	AURPackages     map[string]struct{}
+	CustomPackages  map[string]CustomPackage
 	FlatpakPackages map[string]struct{}
 	FlatpakRemotes  map[string]FlatpakRemote
 	SystemServices  []string
@@ -51,16 +52,26 @@ type Postinstall struct {
 	Cmd       string
 }
 
+type CustomPackage struct {
+	Name     string
+	Pkgbuild string
+}
+
 func NewBlueprint() *Blueprint {
 	return &Blueprint{
 		Packages:        make(map[string]struct{}),
 		AURPackages:     make(map[string]struct{}),
+		CustomPackages:  make(map[string]CustomPackage),
 		FlatpakPackages: make(map[string]struct{}),
 		FlatpakRemotes:  make(map[string]FlatpakRemote),
 	}
 }
 
-func (bp *Blueprint) AddModule(templateVars map[string]any, module config.OSModule) error {
+func (bp *Blueprint) AddModule(
+	templateVars map[string]any,
+	ostemplate *config.OSTemplate,
+	module config.OSModule,
+) error {
 	// Packages
 	for _, archPkgName := range module.Packages {
 		pkgName, err := archPkgName.Render(templateVars)
@@ -75,6 +86,24 @@ func (bp *Blueprint) AddModule(templateVars map[string]any, module config.OSModu
 			return fmt.Errorf("failed to render aur package: %w", err)
 		}
 		bp.AURPackages[pkgName] = struct{}{}
+	}
+	for _, customPkgName := range module.CustomPackages {
+		pkgName, err := customPkgName.Render(templateVars)
+		if err != nil {
+			return fmt.Errorf("failed to render custom package name: %w", err)
+		}
+		customPkgConfig, ok := ostemplate.CustomPackages[pkgName]
+		if !ok {
+			return fmt.Errorf("reference to undefined custom_package: %q", pkgName)
+		}
+		pkgbuild, err := customPkgConfig.Pkgbuild.Render(templateVars)
+		if err != nil {
+			return fmt.Errorf("failed to render pkgbuild for %q: %w", pkgName, err)
+		}
+		bp.CustomPackages[pkgName] = CustomPackage{
+			Name:     pkgName,
+			Pkgbuild: pkgbuild,
+		}
 	}
 	for _, flatpakPkgName := range module.FlatpakPackages {
 		pkgName, err := flatpakPkgName.Render(templateVars)
@@ -235,7 +264,7 @@ func AssembleBlueprint(osTemplate *config.OSTemplate, osconfig string) (*Bluepri
 		if !ok {
 			return nil, fmt.Errorf("unknown module %q", moduleName)
 		}
-		if err := bp.AddModule(templateVars, module); err != nil {
+		if err := bp.AddModule(templateVars, osTemplate, module); err != nil {
 			return nil, fmt.Errorf("failed to register module %q: %w", moduleName, err)
 		}
 	}

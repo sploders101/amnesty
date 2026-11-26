@@ -69,12 +69,13 @@ func EnableLocales(locgenPath string, chosenLocale string) error {
 	return nil
 }
 
-func InstallAurPackages(
+func InstallCustomPackages(
 	ctx context.Context,
 	container buildserver.BuildServer,
 	asUser string,
 	rootfsPath string,
 	aurPackages []string,
+	customPackages []blueprint.CustomPackage,
 ) error {
 	// Set up nopasswd sudo for primary user to install AUR packages
 	// TODO: Once we're plumbed into the COW semantics of btrfs, we could fork the system to build AUR packages,
@@ -90,12 +91,24 @@ func InstallAurPackages(
 
 	for _, pkg := range aurPackages {
 		slog.Info("Installing AUR package", "package", pkg)
-		_, err := container.Client.InstallAur(ctx, ipcv1.InstallAurRequest_builder{
-			Package: pkg,
+		_, err := container.Client.InstallCustom(ctx, ipcv1.InstallCustomRequest_builder{
 			AsUser:  asUser,
+			Package: pkg,
 		}.Build())
 		if err != nil {
 			return fmt.Errorf("failed to install aur package %q: %w", pkg, err)
+		}
+	}
+
+	for _, pkg := range customPackages {
+		slog.Info("Installing custom package", "package", pkg.Name)
+		_, err := container.Client.InstallCustom(ctx, ipcv1.InstallCustomRequest_builder{
+			Package:  pkg.Name,
+			Pkgbuild: &pkg.Pkgbuild,
+			AsUser:   asUser,
+		}.Build())
+		if err != nil {
+			return fmt.Errorf("failed to install custom package %q: %w", pkg, err)
 		}
 	}
 

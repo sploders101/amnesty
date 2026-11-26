@@ -20,28 +20,31 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-type InstallAurRequest struct {
-	state              protoimpl.MessageState `protogen:"opaque.v1"`
-	xxx_hidden_Package string                 `protobuf:"bytes,1,opt,name=package,proto3"`
-	xxx_hidden_AsUser  string                 `protobuf:"bytes,2,opt,name=as_user,json=asUser,proto3"`
-	unknownFields      protoimpl.UnknownFields
-	sizeCache          protoimpl.SizeCache
+type InstallCustomRequest struct {
+	state                  protoimpl.MessageState `protogen:"opaque.v1"`
+	xxx_hidden_AsUser      string                 `protobuf:"bytes,1,opt,name=as_user,json=asUser,proto3"`
+	xxx_hidden_Package     string                 `protobuf:"bytes,2,opt,name=package,proto3"`
+	xxx_hidden_Pkgbuild    *string                `protobuf:"bytes,10,opt,name=pkgbuild,proto3,oneof"`
+	XXX_raceDetectHookData protoimpl.RaceDetectHookData
+	XXX_presence           [1]uint32
+	unknownFields          protoimpl.UnknownFields
+	sizeCache              protoimpl.SizeCache
 }
 
-func (x *InstallAurRequest) Reset() {
-	*x = InstallAurRequest{}
+func (x *InstallCustomRequest) Reset() {
+	*x = InstallCustomRequest{}
 	mi := &file_proto_com_shaunkeys_amnesty_ipc_v1_main_proto_msgTypes[0]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *InstallAurRequest) String() string {
+func (x *InstallCustomRequest) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*InstallAurRequest) ProtoMessage() {}
+func (*InstallCustomRequest) ProtoMessage() {}
 
-func (x *InstallAurRequest) ProtoReflect() protoreflect.Message {
+func (x *InstallCustomRequest) ProtoReflect() protoreflect.Message {
 	mi := &file_proto_com_shaunkeys_amnesty_ipc_v1_main_proto_msgTypes[0]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -53,64 +56,96 @@ func (x *InstallAurRequest) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-func (x *InstallAurRequest) GetPackage() string {
-	if x != nil {
-		return x.xxx_hidden_Package
-	}
-	return ""
-}
-
-func (x *InstallAurRequest) GetAsUser() string {
+func (x *InstallCustomRequest) GetAsUser() string {
 	if x != nil {
 		return x.xxx_hidden_AsUser
 	}
 	return ""
 }
 
-func (x *InstallAurRequest) SetPackage(v string) {
-	x.xxx_hidden_Package = v
+func (x *InstallCustomRequest) GetPackage() string {
+	if x != nil {
+		return x.xxx_hidden_Package
+	}
+	return ""
 }
 
-func (x *InstallAurRequest) SetAsUser(v string) {
+func (x *InstallCustomRequest) GetPkgbuild() string {
+	if x != nil {
+		if x.xxx_hidden_Pkgbuild != nil {
+			return *x.xxx_hidden_Pkgbuild
+		}
+		return ""
+	}
+	return ""
+}
+
+func (x *InstallCustomRequest) SetAsUser(v string) {
 	x.xxx_hidden_AsUser = v
 }
 
-type InstallAurRequest_builder struct {
-	_ [0]func() // Prevents comparability and use of unkeyed literals for the builder.
-
-	Package string
-	AsUser  string
+func (x *InstallCustomRequest) SetPackage(v string) {
+	x.xxx_hidden_Package = v
 }
 
-func (b0 InstallAurRequest_builder) Build() *InstallAurRequest {
-	m0 := &InstallAurRequest{}
+func (x *InstallCustomRequest) SetPkgbuild(v string) {
+	x.xxx_hidden_Pkgbuild = &v
+	protoimpl.X.SetPresent(&(x.XXX_presence[0]), 2, 3)
+}
+
+func (x *InstallCustomRequest) HasPkgbuild() bool {
+	if x == nil {
+		return false
+	}
+	return protoimpl.X.Present(&(x.XXX_presence[0]), 2)
+}
+
+func (x *InstallCustomRequest) ClearPkgbuild() {
+	protoimpl.X.ClearPresent(&(x.XXX_presence[0]), 2)
+	x.xxx_hidden_Pkgbuild = nil
+}
+
+type InstallCustomRequest_builder struct {
+	_ [0]func() // Prevents comparability and use of unkeyed literals for the builder.
+
+	AsUser   string
+	Package  string
+	Pkgbuild *string
+}
+
+func (b0 InstallCustomRequest_builder) Build() *InstallCustomRequest {
+	m0 := &InstallCustomRequest{}
 	b, x := &b0, m0
 	_, _ = b, x
-	x.xxx_hidden_Package = b.Package
 	x.xxx_hidden_AsUser = b.AsUser
+	x.xxx_hidden_Package = b.Package
+	if b.Pkgbuild != nil {
+		protoimpl.X.SetPresentNonAtomic(&(x.XXX_presence[0]), 2, 3)
+		x.xxx_hidden_Pkgbuild = b.Pkgbuild
+	}
 	return m0
 }
 
-type InstallAurResponse struct {
+type InstallCustomResponse struct {
 	state         protoimpl.MessageState `protogen:"opaque.v1"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *InstallAurResponse) Reset() {
-	*x = InstallAurResponse{}
+func (x *InstallCustomResponse) Reset() {
+	*x = InstallCustomResponse{}
 	mi := &file_proto_com_shaunkeys_amnesty_ipc_v1_main_proto_msgTypes[1]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *InstallAurResponse) String() string {
+func (x *InstallCustomResponse) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*InstallAurResponse) ProtoMessage() {}
+func (*InstallCustomResponse) ProtoMessage() {}
 
-func (x *InstallAurResponse) ProtoReflect() protoreflect.Message {
+func (x *InstallCustomResponse) ProtoReflect() protoreflect.Message {
 	mi := &file_proto_com_shaunkeys_amnesty_ipc_v1_main_proto_msgTypes[1]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -122,13 +157,13 @@ func (x *InstallAurResponse) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-type InstallAurResponse_builder struct {
+type InstallCustomResponse_builder struct {
 	_ [0]func() // Prevents comparability and use of unkeyed literals for the builder.
 
 }
 
-func (b0 InstallAurResponse_builder) Build() *InstallAurResponse {
-	m0 := &InstallAurResponse{}
+func (b0 InstallCustomResponse_builder) Build() *InstallCustomResponse {
+	m0 := &InstallCustomResponse{}
 	b, x := &b0, m0
 	_, _ = b, x
 	return m0
@@ -429,11 +464,14 @@ var File_proto_com_shaunkeys_amnesty_ipc_v1_main_proto protoreflect.FileDescript
 
 const file_proto_com_shaunkeys_amnesty_ipc_v1_main_proto_rawDesc = "" +
 	"\n" +
-	"-proto/com/shaunkeys/amnesty/ipc/v1/main.proto\x12\x1ccom.shaunkeys.amnesty.ipc.v1\"F\n" +
-	"\x11InstallAurRequest\x12\x18\n" +
-	"\apackage\x18\x01 \x01(\tR\apackage\x12\x17\n" +
-	"\aas_user\x18\x02 \x01(\tR\x06asUser\"\x14\n" +
-	"\x12InstallAurResponse\"-\n" +
+	"-proto/com/shaunkeys/amnesty/ipc/v1/main.proto\x12\x1ccom.shaunkeys.amnesty.ipc.v1\"w\n" +
+	"\x14InstallCustomRequest\x12\x17\n" +
+	"\aas_user\x18\x01 \x01(\tR\x06asUser\x12\x18\n" +
+	"\apackage\x18\x02 \x01(\tR\apackage\x12\x1f\n" +
+	"\bpkgbuild\x18\n" +
+	" \x01(\tH\x00R\bpkgbuild\x88\x01\x01B\v\n" +
+	"\t_pkgbuild\"\x17\n" +
+	"\x15InstallCustomResponse\"-\n" +
 	"\x11InitializeRequest\x12\x18\n" +
 	"\arootdir\x18\x01 \x01(\tR\arootdir\"\x14\n" +
 	"\x12InitializeResponse\"x\n" +
@@ -445,32 +483,31 @@ const file_proto_com_shaunkeys_amnesty_ipc_v1_main_proto_rawDesc = "" +
 	"\x06_runas\"I\n" +
 	"\x12RunCommandResponse\x12\x1b\n" +
 	"\texit_code\x18\x01 \x01(\x05R\bexitCode\x12\x16\n" +
-	"\x06output\x18\x02 \x01(\tR\x06output2\xe3\x02\n" +
+	"\x06output\x18\x02 \x01(\tR\x06output2\xec\x02\n" +
 	"\x0eBuilderService\x12o\n" +
 	"\n" +
 	"Initialize\x12/.com.shaunkeys.amnesty.ipc.v1.InitializeRequest\x1a0.com.shaunkeys.amnesty.ipc.v1.InitializeResponse\x12o\n" +
 	"\n" +
-	"RunCommand\x12/.com.shaunkeys.amnesty.ipc.v1.RunCommandRequest\x1a0.com.shaunkeys.amnesty.ipc.v1.RunCommandResponse\x12o\n" +
-	"\n" +
-	"InstallAur\x12/.com.shaunkeys.amnesty.ipc.v1.InstallAurRequest\x1a0.com.shaunkeys.amnesty.ipc.v1.InstallAurResponseB\x98\x02\n" +
+	"RunCommand\x12/.com.shaunkeys.amnesty.ipc.v1.RunCommandRequest\x1a0.com.shaunkeys.amnesty.ipc.v1.RunCommandResponse\x12x\n" +
+	"\rInstallCustom\x122.com.shaunkeys.amnesty.ipc.v1.InstallCustomRequest\x1a3.com.shaunkeys.amnesty.ipc.v1.InstallCustomResponseB\x98\x02\n" +
 	" com.com.shaunkeys.amnesty.ipc.v1B\tMainProtoP\x01ZTgithub.com/sploders101/amnesty/internal/gen/proto/com/shaunkeys/amnesty/ipc/v1;ipcv1\xa2\x02\x04CSAI\xaa\x02\x1cCom.Shaunkeys.Amnesty.Ipc.V1\xca\x02\x1cCom\\Shaunkeys\\Amnesty\\Ipc\\V1\xe2\x02(Com\\Shaunkeys\\Amnesty\\Ipc\\V1\\GPBMetadata\xea\x02 Com::Shaunkeys::Amnesty::Ipc::V1b\x06proto3"
 
 var file_proto_com_shaunkeys_amnesty_ipc_v1_main_proto_msgTypes = make([]protoimpl.MessageInfo, 6)
 var file_proto_com_shaunkeys_amnesty_ipc_v1_main_proto_goTypes = []any{
-	(*InstallAurRequest)(nil),  // 0: com.shaunkeys.amnesty.ipc.v1.InstallAurRequest
-	(*InstallAurResponse)(nil), // 1: com.shaunkeys.amnesty.ipc.v1.InstallAurResponse
-	(*InitializeRequest)(nil),  // 2: com.shaunkeys.amnesty.ipc.v1.InitializeRequest
-	(*InitializeResponse)(nil), // 3: com.shaunkeys.amnesty.ipc.v1.InitializeResponse
-	(*RunCommandRequest)(nil),  // 4: com.shaunkeys.amnesty.ipc.v1.RunCommandRequest
-	(*RunCommandResponse)(nil), // 5: com.shaunkeys.amnesty.ipc.v1.RunCommandResponse
+	(*InstallCustomRequest)(nil),  // 0: com.shaunkeys.amnesty.ipc.v1.InstallCustomRequest
+	(*InstallCustomResponse)(nil), // 1: com.shaunkeys.amnesty.ipc.v1.InstallCustomResponse
+	(*InitializeRequest)(nil),     // 2: com.shaunkeys.amnesty.ipc.v1.InitializeRequest
+	(*InitializeResponse)(nil),    // 3: com.shaunkeys.amnesty.ipc.v1.InitializeResponse
+	(*RunCommandRequest)(nil),     // 4: com.shaunkeys.amnesty.ipc.v1.RunCommandRequest
+	(*RunCommandResponse)(nil),    // 5: com.shaunkeys.amnesty.ipc.v1.RunCommandResponse
 }
 var file_proto_com_shaunkeys_amnesty_ipc_v1_main_proto_depIdxs = []int32{
 	2, // 0: com.shaunkeys.amnesty.ipc.v1.BuilderService.Initialize:input_type -> com.shaunkeys.amnesty.ipc.v1.InitializeRequest
 	4, // 1: com.shaunkeys.amnesty.ipc.v1.BuilderService.RunCommand:input_type -> com.shaunkeys.amnesty.ipc.v1.RunCommandRequest
-	0, // 2: com.shaunkeys.amnesty.ipc.v1.BuilderService.InstallAur:input_type -> com.shaunkeys.amnesty.ipc.v1.InstallAurRequest
+	0, // 2: com.shaunkeys.amnesty.ipc.v1.BuilderService.InstallCustom:input_type -> com.shaunkeys.amnesty.ipc.v1.InstallCustomRequest
 	3, // 3: com.shaunkeys.amnesty.ipc.v1.BuilderService.Initialize:output_type -> com.shaunkeys.amnesty.ipc.v1.InitializeResponse
 	5, // 4: com.shaunkeys.amnesty.ipc.v1.BuilderService.RunCommand:output_type -> com.shaunkeys.amnesty.ipc.v1.RunCommandResponse
-	1, // 5: com.shaunkeys.amnesty.ipc.v1.BuilderService.InstallAur:output_type -> com.shaunkeys.amnesty.ipc.v1.InstallAurResponse
+	1, // 5: com.shaunkeys.amnesty.ipc.v1.BuilderService.InstallCustom:output_type -> com.shaunkeys.amnesty.ipc.v1.InstallCustomResponse
 	3, // [3:6] is the sub-list for method output_type
 	0, // [0:3] is the sub-list for method input_type
 	0, // [0:0] is the sub-list for extension type_name
@@ -483,6 +520,7 @@ func file_proto_com_shaunkeys_amnesty_ipc_v1_main_proto_init() {
 	if File_proto_com_shaunkeys_amnesty_ipc_v1_main_proto != nil {
 		return
 	}
+	file_proto_com_shaunkeys_amnesty_ipc_v1_main_proto_msgTypes[0].OneofWrappers = []any{}
 	file_proto_com_shaunkeys_amnesty_ipc_v1_main_proto_msgTypes[4].OneofWrappers = []any{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{

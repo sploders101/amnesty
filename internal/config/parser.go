@@ -13,8 +13,9 @@ import (
 var ErrInvalidConfig error = errors.New("invalid config")
 
 type parsedDoc struct {
-	config *OSConfig
-	module *OSModule
+	config        *OSConfig
+	module        *OSModule
+	customPackage *CustomPackage
 }
 
 func (doc *parsedDoc) UnmarshalYAML(node *yaml.Node) error {
@@ -43,6 +44,9 @@ func (doc *parsedDoc) UnmarshalYAML(node *yaml.Node) error {
 		case "OSModule":
 			doc.module = &OSModule{}
 			err = node.Decode(doc.module)
+		case "CustomPackage":
+			doc.customPackage = &CustomPackage{}
+			err = node.Decode(doc.customPackage)
 		}
 		if err != nil {
 			return err
@@ -53,14 +57,16 @@ func (doc *parsedDoc) UnmarshalYAML(node *yaml.Node) error {
 }
 
 type OSTemplate struct {
-	Configs map[string]OSConfig
-	Modules map[string]OSModule
+	Configs        map[string]OSConfig
+	Modules        map[string]OSModule
+	CustomPackages map[string]CustomPackage
 }
 
 func NewOSTemplate() *OSTemplate {
 	return &OSTemplate{
-		Configs: make(map[string]OSConfig),
-		Modules: make(map[string]OSModule),
+		Configs:        make(map[string]OSConfig),
+		Modules:        make(map[string]OSModule),
+		CustomPackages: make(map[string]CustomPackage),
 	}
 }
 
@@ -90,6 +96,8 @@ func (bp *OSTemplate) LoadFile(path string) error {
 			bp.Configs[doc.config.Name] = *doc.config
 		case doc.module != nil:
 			bp.Modules[doc.module.Name] = *doc.module
+		case doc.customPackage != nil:
+			bp.CustomPackages[doc.customPackage.Name] = *doc.customPackage
 		}
 	}
 

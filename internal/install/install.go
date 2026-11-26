@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"log/slog"
+	"maps"
 	"os"
 	"path/filepath"
 	"slices"
@@ -114,14 +115,15 @@ func InstallBlueprint(
 		)
 	}
 
-	// Install AUR packages (unfinished)
+	// Install AUR/custom packages
 	slog.Info("Installing AUR packages...")
-	if err := archinstall.InstallAurPackages(
+	if err := archinstall.InstallCustomPackages(
 		ctx,
 		container,
 		blueprint.Username,
 		rootfsPath,
 		utils.LinearizeStringSet(blueprint.AURPackages),
+		utils.LinearizeIter(maps.Values(blueprint.CustomPackages)),
 	); err != nil {
 		return err
 	}

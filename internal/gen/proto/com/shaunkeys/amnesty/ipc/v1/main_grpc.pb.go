@@ -19,9 +19,9 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	BuilderService_Initialize_FullMethodName = "/com.shaunkeys.amnesty.ipc.v1.BuilderService/Initialize"
-	BuilderService_RunCommand_FullMethodName = "/com.shaunkeys.amnesty.ipc.v1.BuilderService/RunCommand"
-	BuilderService_InstallAur_FullMethodName = "/com.shaunkeys.amnesty.ipc.v1.BuilderService/InstallAur"
+	BuilderService_Initialize_FullMethodName    = "/com.shaunkeys.amnesty.ipc.v1.BuilderService/Initialize"
+	BuilderService_RunCommand_FullMethodName    = "/com.shaunkeys.amnesty.ipc.v1.BuilderService/RunCommand"
+	BuilderService_InstallCustom_FullMethodName = "/com.shaunkeys.amnesty.ipc.v1.BuilderService/InstallCustom"
 )
 
 // BuilderServiceClient is the client API for BuilderService service.
@@ -30,7 +30,7 @@ const (
 type BuilderServiceClient interface {
 	Initialize(ctx context.Context, in *InitializeRequest, opts ...grpc.CallOption) (*InitializeResponse, error)
 	RunCommand(ctx context.Context, in *RunCommandRequest, opts ...grpc.CallOption) (*RunCommandResponse, error)
-	InstallAur(ctx context.Context, in *InstallAurRequest, opts ...grpc.CallOption) (*InstallAurResponse, error)
+	InstallCustom(ctx context.Context, in *InstallCustomRequest, opts ...grpc.CallOption) (*InstallCustomResponse, error)
 }
 
 type builderServiceClient struct {
@@ -61,10 +61,10 @@ func (c *builderServiceClient) RunCommand(ctx context.Context, in *RunCommandReq
 	return out, nil
 }
 
-func (c *builderServiceClient) InstallAur(ctx context.Context, in *InstallAurRequest, opts ...grpc.CallOption) (*InstallAurResponse, error) {
+func (c *builderServiceClient) InstallCustom(ctx context.Context, in *InstallCustomRequest, opts ...grpc.CallOption) (*InstallCustomResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(InstallAurResponse)
-	err := c.cc.Invoke(ctx, BuilderService_InstallAur_FullMethodName, in, out, cOpts...)
+	out := new(InstallCustomResponse)
+	err := c.cc.Invoke(ctx, BuilderService_InstallCustom_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -77,7 +77,7 @@ func (c *builderServiceClient) InstallAur(ctx context.Context, in *InstallAurReq
 type BuilderServiceServer interface {
 	Initialize(context.Context, *InitializeRequest) (*InitializeResponse, error)
 	RunCommand(context.Context, *RunCommandRequest) (*RunCommandResponse, error)
-	InstallAur(context.Context, *InstallAurRequest) (*InstallAurResponse, error)
+	InstallCustom(context.Context, *InstallCustomRequest) (*InstallCustomResponse, error)
 	mustEmbedUnimplementedBuilderServiceServer()
 }
 
@@ -94,8 +94,8 @@ func (UnimplementedBuilderServiceServer) Initialize(context.Context, *Initialize
 func (UnimplementedBuilderServiceServer) RunCommand(context.Context, *RunCommandRequest) (*RunCommandResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method RunCommand not implemented")
 }
-func (UnimplementedBuilderServiceServer) InstallAur(context.Context, *InstallAurRequest) (*InstallAurResponse, error) {
-	return nil, status.Error(codes.Unimplemented, "method InstallAur not implemented")
+func (UnimplementedBuilderServiceServer) InstallCustom(context.Context, *InstallCustomRequest) (*InstallCustomResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method InstallCustom not implemented")
 }
 func (UnimplementedBuilderServiceServer) mustEmbedUnimplementedBuilderServiceServer() {}
 func (UnimplementedBuilderServiceServer) testEmbeddedByValue()                        {}
@@ -154,20 +154,20 @@ func _BuilderService_RunCommand_Handler(srv interface{}, ctx context.Context, de
 	return interceptor(ctx, in, info, handler)
 }
 
-func _BuilderService_InstallAur_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(InstallAurRequest)
+func _BuilderService_InstallCustom_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(InstallCustomRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(BuilderServiceServer).InstallAur(ctx, in)
+		return srv.(BuilderServiceServer).InstallCustom(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: BuilderService_InstallAur_FullMethodName,
+		FullMethod: BuilderService_InstallCustom_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(BuilderServiceServer).InstallAur(ctx, req.(*InstallAurRequest))
+		return srv.(BuilderServiceServer).InstallCustom(ctx, req.(*InstallCustomRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -188,8 +188,8 @@ var BuilderService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _BuilderService_RunCommand_Handler,
 		},
 		{
-			MethodName: "InstallAur",
-			Handler:    _BuilderService_InstallAur_Handler,
+			MethodName: "InstallCustom",
+			Handler:    _BuilderService_InstallCustom_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
